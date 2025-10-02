@@ -10,6 +10,7 @@ export async function draw(deckId, count = 1) {
   return res.json()
 }
 
+// not needed?
 // helper to calculate card value for Blackjack
 export function cardValue(card) {
   const val = card.value
@@ -34,6 +35,8 @@ export function handValue(cards) {
   return total
 }
 
+// useful for more than 1 deck and multiple rounds
+// instead of recreating a new deck each time
 export async function shuffleDeck(deckId) {
   const res = await fetch(`${BASE}/${deckId}/shuffle/`)
   return res.json()
