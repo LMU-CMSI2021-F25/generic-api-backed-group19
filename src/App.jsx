@@ -103,7 +103,7 @@ function App() {
   //renders hand display. For UI purposes
   const renderHand = (hand) =>
     hand.map((card) => {
-      const isRed = card.suit === "HEARTS" || card.suit === "DIAMONDS";
+      const isRed = card.suit == "HEARTS" || card.suit === "DIAMONDS";
       return (
         <div
           key={card.code}
@@ -113,7 +113,7 @@ function App() {
             marginRight: "8px",
             borderRadius: "8px",
             fontWeight: "bold",
-            fontSize: "16px",
+            fontSize: "20px",
             color: isRed ? "red" : "black",
             backgroundColor: isRed ? "#ffe6e6" : "#e6e6e6",
             textAlign: "center",
@@ -137,7 +137,7 @@ function App() {
             marginRight: "8px",
             borderRadius: "8px",
             fontWeight: "bold",
-            fontSize: "16px",
+            fontSize: "20px",
             color: isRed ? "red" : "black",
             backgroundColor: isRed ? "#ffe6e6" : "#e6e6e6",
             textAlign: "center",
@@ -155,37 +155,63 @@ function App() {
     )});
 
 
-  return (
-    <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
-      <h1>&#9824; &#9829; Blackjack Game &#9830; &#9827;</h1>
-
-      <div>
-        <h2>Dealer's Hand ({dealerHandValue(dealerHand, gameOver)})</h2>
-        <div style={{ display: 'flex' }}>{renderDealerHand(dealerHand)}</div>
-      </div>
-
-      <div>
-        <h2>Your Hand ({handValue(playerHand)})</h2>
-        <div style={{ display: 'flex' }}>{renderHand(playerHand)}</div>
-      </div>
-
-      <div style={{ marginTop: '20px' }}>
-        {!gameOver && (
-          <>
-            <button onClick={handleHit}>Hit</button>
-            <button onClick={handleStand} style={{ marginLeft: '10px' }}>
-              Stand
+    return (
+      <div
+        style={{
+          padding: '20px',
+          fontFamily: "'Bebas Neue', sans-serif",
+          display: 'flex',
+          gap: '40px',
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <h1>&#9824; &#9829; Blackjack Game &#9830; &#9827;</h1>
+    
+          <div>
+            <h2>Dealer's Hand ({dealerHandValue(dealerHand, gameOver)})</h2>
+            <div>{renderDealerHand(dealerHand)}</div>
+          </div>
+    
+          <div>
+            <h2>Your Hand ({handValue(playerHand)})</h2>
+            <div>{renderHand(playerHand)}</div>
+          </div>
+    
+          <div style={{
+                marginTop: "20px",
+                display: "flex",
+                gap: "8px",
+                flexWrap: "wrap",
+                }}>
+            {!gameOver && (
+              <>
+                <button onClick={handleHit}>Hit</button>
+                <button onClick={handleStand} style={{ marginLeft: '10px' }}>
+                  Stand
+                </button>
+              </>
+            )}
+            <button onClick={startGame} style={{ marginLeft: '10px' }}>
+              Restart Game
             </button>
-          </>
-        )}
-        <button onClick={startGame} style={{ marginLeft: '10px' }}>
-          Restart Game
-        </button>
+          </div>
+    
+          {message && <h2 style={{ marginTop: '20px' }}>{message}</h2>}
+        </div>
+        <div>
+          <img
+            src="https://pngimg.com/uploads/cards/cards_PNG8490.png"
+            alt="Cards"
+            style={{
+              width: '500px', 
+              height: 'auto',
+            }}
+          />
+        </div>
       </div>
-
-      {message && <h3 style={{ marginTop: '20px' }}>{message}</h3>}
-    </div>
-  );
+    );
+    
 }
 
 export default App;
