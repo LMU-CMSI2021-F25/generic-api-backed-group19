@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from 'react';
-<<<<<<< HEAD
 import { newDeck, draw, handValue, dealerHandValue, isBlackjack } from './api'; // uses your existing api.js
-=======
-import { newDeck, draw, handValue } from './api'; // uses your existing api.js
->>>>>>> a8b7e1bbca4f804b85ebcb0f2c7bb2a151322cb9
 import './index.css';
 
 function App() {
@@ -103,10 +99,7 @@ function App() {
     DIAMONDS: "♦",
     CLUBS: "♣",
   };
-<<<<<<< HEAD
 
-=======
->>>>>>> a8b7e1bbca4f804b85ebcb0f2c7bb2a151322cb9
   //renders hand display. For UI purposes
   const renderHand = (hand) =>
     hand.map((card) => {
@@ -131,7 +124,6 @@ function App() {
         </div>
       );
     });
-<<<<<<< HEAD
 
     const renderDealerHand = (hand) =>
     hand.map((card, index) => {
@@ -162,8 +154,6 @@ function App() {
       </div>
     )});
 
-=======
->>>>>>> a8b7e1bbca4f804b85ebcb0f2c7bb2a151322cb9
 
   return (
     <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
