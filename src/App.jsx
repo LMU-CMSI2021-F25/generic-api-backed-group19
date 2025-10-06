@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { newDeck, draw, handValue } from './api'; // uses your existing api.js
+import { newDeck, draw, handValue, dealerHandValue, isBlackjack } from './api'; // uses your existing api.js
+import './index.css';
 
 function App() {
   const [deckId, setDeckId] = useState(null);
@@ -25,6 +26,18 @@ function App() {
     setGameOver(false);
     setMessage('');
     setPlayerStands(false);
+    
+    // Check for immediate blackjack
+    if (isBlackjack([p1, p2]) && !isBlackjack([d1, d2])) {
+      setMessage('You have Blackjack! You win!');
+      setGameOver(true);
+    } else if (isBlackjack([d1, d2]) && !isBlackjack([p1, p2])) {
+      setMessage('Dealer has Blackjack! Dealer wins.');
+      setGameOver(true);
+    } else if (isBlackjack([p1, p2]) && isBlackjack([d1, d2])) {
+      setMessage('Both have Blackjack! Push (tie).');
+      setGameOver(true);
+    }
   }
 
   const handleHit = async () => {
@@ -79,21 +92,76 @@ function App() {
     setMessage(result);
     setGameOver(true);
   };
+  //stores suit symbols. Able to be accessed for display purposes
+  const suitSymbols = {
+    SPADES: "♠",
+    HEARTS: "♥",
+    DIAMONDS: "♦",
+    CLUBS: "♣",
+  };
 
+  //renders hand display. For UI purposes
   const renderHand = (hand) =>
-    hand.map((card) => (
-      <div key={card.code} style={{ padding: '4px', marginRight: '6px' }}>
-        {card.value} of {card.suit}
+    hand.map((card) => {
+      const isRed = card.suit === "HEARTS" || card.suit === "DIAMONDS";
+      return (
+        <div
+          key={card.code}
+          style={{
+            display: "inline-block",
+            padding: "10px 12px",
+            marginRight: "8px",
+            borderRadius: "8px",
+            fontWeight: "bold",
+            fontSize: "16px",
+            color: isRed ? "red" : "black",
+            backgroundColor: isRed ? "#ffe6e6" : "#e6e6e6",
+            textAlign: "center",
+            minWidth: "40px",
+          }}
+        >
+          {suitSymbols[card.suit]} {card.value} {suitSymbols[card.suit]}
+        </div>
+      );
+    });
+
+    const renderDealerHand = (hand) =>
+    hand.map((card, index) => {
+      const isRed = card.suit === "HEARTS" || card.suit === "DIAMONDS";
+      return (
+        <div
+          key={card.code}
+          style={{
+            display: "inline-block",
+            padding: "10px 12px",
+            marginRight: "8px",
+            borderRadius: "8px",
+            fontWeight: "bold",
+            fontSize: "16px",
+            color: isRed ? "red" : "black",
+            backgroundColor: isRed ? "#ffe6e6" : "#e6e6e6",
+            textAlign: "center",
+            minWidth: "40px",
+          }}
+        >
+        {(index === 1 && !gameOver)
+          ? 'Hidden'
+          : (
+            <>
+              {suitSymbols[card.suit]} {card.value} {suitSymbols[card.suit]}
+            </>
+          )}
       </div>
-    ));
+    )});
+
 
   return (
     <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
-      <h1>Blackjack Game</h1>
+      <h1>&#9824; &#9829; Blackjack Game &#9830; &#9827;</h1>
 
       <div>
-        <h2>Dealer's Hand ({handValue(dealerHand)})</h2>
-        <div style={{ display: 'flex' }}>{renderHand(dealerHand)}</div>
+        <h2>Dealer's Hand ({dealerHandValue(dealerHand, gameOver)})</h2>
+        <div style={{ display: 'flex' }}>{renderDealerHand(dealerHand)}</div>
       </div>
 
       <div>
