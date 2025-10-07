@@ -292,7 +292,7 @@ function App() {
                 {!gameOver && (
                   <>
                     <button onClick={handleHit}>Hit</button>
-                    <button onClick={handleStand} style={{ marginLeft: '10px' }}>
+                    <button onClick={handleStand} style={{ marginLeft: '10px', marginRight: '10px'}} >
                       Stand
                     </button>
                   </>
