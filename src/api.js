@@ -67,3 +67,7 @@ export function handValue(cards) {
   export function isBlackjack(cards) {
     return cards.length === 2 && handValue(cards) === 21
   }
+
+  export function isFiveCardCharlie(cards) {
+    return cards.length === 5 && handValue(cards) <= 21
+  }

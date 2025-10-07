@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { newDeck, draw, handValue, dealerHandValue, isBlackjack } from './api'; // uses your existing api.js
+import { newDeck, draw, handValue, dealerHandValue, isBlackjack, isFiveCardCharlie } from './api'; // uses your existing api.js
 import './index.css';
 
 function App() {
@@ -9,6 +9,8 @@ function App() {
   const [gameOver, setGameOver] = useState(false);
   const [message, setMessage] = useState('');
   const [playerStands, setPlayerStands] = useState(false);
+  // betting/process state to prevent double-click issues
+  const [processingStart, setProcessingStart] = useState(false);
   const [wins, setWins] = useState(0);
   const [losses, setLosses] = useState(0);
   const [wallet, setWallet] = useState(500);
@@ -17,28 +19,66 @@ function App() {
 
 
 
-  // Start game on load
-  useEffect(() => {
-    startGame();
-  }, []);
+  // Don't auto-start the game on load — wait for player to place a bet
+  useEffect(() => {}, []);
 
-  async function startGame() {
-    if (bet === 0) {
-      setMessage("Please place a bet first!");
+  // Start a new round with an optional bet override.
+  // Use `betOverride` to avoid race conditions where setState isn't applied before start.
+  async function startGame(betOverride) {
+    if (processingStart) return; // prevent double clicks
+    const initialBet = typeof betOverride === 'number' && betOverride > 0 ? betOverride : bet;
+    if (!initialBet || initialBet <= 0) {
+      setMessage('Please place a bet first!');
       return;
-    
     }
-    const deck = await newDeck();
-    setDeckId(deck.deck_id);
+    if (wallet <= 0) {
+      setMessage('You have no money. Cannot bet.');
+      return;
+    }
+    if (initialBet > wallet) {
+      setMessage('Insufficient funds for that bet.');
+      return;
+    }
 
-    const drawRes = await draw(deck.deck_id, 4);
-    const [p1, d1, p2, d2] = drawRes.cards;
-    setPlayerHand([p1, p2]);
-    setDealerHand([d1, d2]);
-    setGameOver(false);
+    setProcessingStart(true);
     setMessage('');
-    setPlayerStands(false);
+    setBet(initialBet);
     setHasBet(true);
+    try {
+      const deck = await newDeck();
+      setDeckId(deck.deck_id);
+
+      const drawRes = await draw(deck.deck_id, 4);
+      const [p1, d1, p2, d2] = drawRes.cards;
+      setPlayerHand([p1, p2]);
+      setDealerHand([d1, d2]);
+      setGameOver(false);
+      setPlayerStands(false);
+
+      // Check for immediate blackjack using local initialBet for payouts
+      if (isBlackjack([p1, p2])) {
+        if (isBlackjack([d1, d2])) {
+          setMessage("Both you and the dealer have Blackjack! It's a push.");
+        } else {
+          setMessage("Blackjack! You win!");
+          setWins(prev => prev + 1);
+          setWallet(prev => prev + Math.floor(initialBet * 1.5));
+        }
+        setGameOver(true);
+        setHasBet(false);
+      } else if (isBlackjack([d1, d2])) {
+        setMessage("Dealer has Blackjack! Dealer wins.");
+        setLosses(prev => prev + 1);
+        setWallet(prev => prev - initialBet);
+        setGameOver(true);
+        setHasBet(false);
+      }
+    } catch (e) {
+      console.error(e);
+      setMessage('Network error starting game. Try again.');
+    } finally {
+      setProcessingStart(false);
+    }
   }
 
   const handleHit = async () => {
@@ -56,6 +96,12 @@ function App() {
       setGameOver(true);
       setLosses(prev => prev + 1);
       setWallet(prev => prev - bet);
+    }
+    else if (isFiveCardCharlie(newHand)) {
+      setMessage('Five Card Charlie! You win!');
+      setGameOver(true);
+      setWins(prev => prev + 1);
+      setWallet(prev => prev + bet);
     }
   };
 
@@ -75,10 +121,8 @@ function App() {
     const dealerScore = handValue(dealerCards);
 
     //calculates game state --> who wins after a certain condition is met
-    // might be a better way to structure this (switch case ?)
     let result = '';
 
-    // doesn't handle 5 card charlie or blackjack
     if (dealerScore > 21) {
       result = 'Dealer busts! You win!';
       setWins(prev => prev + 1);
@@ -98,6 +142,7 @@ function App() {
     setMessage(result);
     setGameOver(true);
   };
+
   //stores suit symbols. Able to be accessed for display purposes
   const suitSymbols = {
     SPADES: "♠",
@@ -187,50 +232,60 @@ function App() {
           <div style={{ marginTop: "20px"}}>
             {!hasBet ? (
               <>
-                <p>Place your bet to start the game!</p>
-                <button 
-                  onClick={() => { setBet(25); startGame(); }} 
-                  disabled={wallet < 25}
-
-                  style={{
-                    backgroundColor: wallet < 25 ? "gray" : "green",
-                    color: "white",
-                    marginRight: "10px",
-                    cursor: wallet < 25 ? "not-allowed" : "pointer"
-                  }}
-                  >$25
-                </button>
-                <button 
-                  onClick={() => { setBet(100); startGame(); }}
-                  disabled={wallet < 100}
-                  style={{
-                    backgroundColor: wallet < 100 ? "gray" : "black",
-                    color: "white",
-                    marginRight: "10px",
-                    cursor: wallet < 100 ? "not-allowed" : "pointer"
-                  }}
-                  >$100
-                </button>
-                <button 
-                  onClick={() => { setBet(500); startGame(); }}
-                  disabled={wallet < 500}
-                  style={{
-                    backgroundColor: wallet < 500 ? "gray" : "purple",
-                    color: "white",
-                    marginRight: "10px",
-                    cursor: wallet < 500 ? "not-allowed" : "pointer"
-                  }}
-                  >$500
-                </button>
-                <button 
-                  onClick={() => { setBet(wallet); startGame(); }}
-                  style={{
-                    backgroundColor: "Gold",
-                    color: "white",
-                    marginRight: "10px",
-                  }}
-                  >All in!
-                </button>
+                      <p>Place your bet to start the game!</p>
+                      <button
+                        onClick={() => startGame(25)}
+                        disabled={wallet < 25 || processingStart}
+                        style={{
+                          backgroundColor: wallet < 25 ? "gray" : "green",
+                          color: "white",
+                          marginRight: "10px",
+                          cursor: wallet < 25 ? "not-allowed" : "pointer"
+                        }}
+                      >
+                        $25
+                      </button>
+                      <button
+                        onClick={() => startGame(100)}
+                        disabled={wallet < 100 || processingStart}
+                        style={{
+                          backgroundColor: wallet < 100 ? "gray" : "black",
+                          color: "white",
+                          marginRight: "10px",
+                          cursor: wallet < 100 ? "not-allowed" : "pointer"
+                        }}
+                      >
+                        $100
+                      </button>
+                      <button
+                        onClick={() => startGame(500)}
+                        disabled={wallet < 500 || processingStart}
+                        style={{
+                          backgroundColor: wallet < 500 ? "gray" : "purple",
+                          color: "white",
+                          marginRight: "10px",
+                          cursor: wallet < 500 ? "not-allowed" : "pointer"
+                        }}
+                      >
+                        $500
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (wallet <= 0) {
+                            setMessage('You have no money to go all-in.');
+                            return;
+                          }
+                          startGame(wallet);
+                        }}
+                        disabled={processingStart}
+                        style={{
+                          backgroundColor: "Gold",
+                          color: "white",
+                          marginRight: "10px",
+                        }}
+                      >
+                        All in!
+                      </button>
               </>
             ) : (
               <>
@@ -260,7 +315,7 @@ function App() {
             <p style={{ fontSize: "24px", fontWeight: "bold", color: "red" }}>
               Losses: {losses}
             </p>
-            <p style={{ fontSize: "26px", fontWeight: "bold", color: "blue" }}>
+            <p style={{ fontSize: "26px", fontWeight: "bold", color: "turquoise" }}>
                Money: ${wallet}
             </p>
             </div>
