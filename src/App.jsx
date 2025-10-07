@@ -184,7 +184,7 @@ function App() {
             <div>{renderHand(playerHand)}</div>
           </div>
 
-          <div style={{ marginTop: "20px" }}>
+          <div style={{ marginTop: "20px"}}>
             {!hasBet ? (
               <>
                 <p>Place your bet to start the game!</p>
@@ -251,8 +251,9 @@ function App() {
     
           {message && <h2 style={{ marginTop: '20px' }}>{message}</h2>}
 
-          <div style={{ marginTop: "20px" }}>
+          <div style={{ marginTop: "20px"}}>
             <h2>Scoreboard</h2>
+            <div style={{ marginTop: "20px", display: 'grid', gridTemplateColumns: "repeat(3, auto)"}}>
             <p style={{ fontSize: "24px", fontWeight: "bold", color: "green" }}>
               Wins: {wins}
             </p>
@@ -262,6 +263,7 @@ function App() {
             <p style={{ fontSize: "26px", fontWeight: "bold", color: "blue" }}>
                Money: ${wallet}
             </p>
+            </div>
 
             {wallet <= 0 && (
               <button
