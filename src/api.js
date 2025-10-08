@@ -68,6 +68,11 @@ export function handValue(cards) {
     return cards.length === 2 && handValue(cards) === 21
   }
 
+  export default function handler(req, res) {
+    res.status(200).json({ message: "Hello from my API!" });
+}
+
+
   export function isFiveCardCharlie(cards) {
     return cards.length === 5 && handValue(cards) <= 21
   }
