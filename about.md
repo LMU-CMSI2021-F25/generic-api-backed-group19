@@ -1,5 +1,5 @@
 We created a Blackjack app using an API that simulates a deck of cards. The API documentation can be found at: https://deckofcardsapi.com/
-Our deployment link is:
+Our deployment link is: http://localhost:5173/
 
 In our blackjack game, the player begins by selecting a unit with which to bet for the hand. 
 This betting feature was created without using the API but we decided to add it to make the app feel more complete.
