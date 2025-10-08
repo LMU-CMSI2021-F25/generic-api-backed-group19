@@ -1,3 +1,7 @@
+## About our Blackjack Webapp
+
+---
+
 We created a Blackjack app using an API that simulates a deck of cards. The API documentation can be found at: https://deckofcardsapi.com/
 Our deployment link is: http://localhost:5173/
 
